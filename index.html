@@ -1152,9 +1152,9 @@ async function uploadThreads(token, userId, title, caption) {
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
-async function uploadToGitHub() { return uploadToDriveFromBrowser(); }
+async async function uploadToGitHub() { return await uploadToDriveFromBrowser(); }
 
-function uploadToDriveFromBrowser() {
+async function uploadToDriveFromBrowser() {
   try {
     const token  = S.cfg.ghToken;
     const repo   = S.cfg.ghRepo || 'JJ-Labs-Korea/shorts-translator';
