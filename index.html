@@ -1077,46 +1077,52 @@ async function uploadYouTube(token, title, caption) {
 async function uploadInstagram(token, igUserId, title, caption) {
   try {
     const fullCaption = title + '\n\n' + caption;
-    toast('📤 Instagram: 구글 드라이브 업로드 중...', 'if');
-    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
-    const cForm = new FormData(); cForm.append('media_type','REELS'); cForm.append('video_url', driveUrl); cForm.append('caption', fullCaption); cForm.append('share_to_feed','true'); cForm.append('access_token', token);
-    const cRes  = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {method:'POST', body:cForm}); const cData = await cRes.json();
-    if(!cData.id) return {ok:false, msg:'컨테이너 생성 실패'};
-    toast('⏳ Instagram 렌더링 대기 중...', 'if');
-    for(let i=0; i<12; i++){
-      await new Promise(r=>setTimeout(r,10000));
-      const sRes  = await fetch(`https://graph.facebook.com/v19.0/${cData.id}?fields=status_code&access_token=${token}`); const sData = await sRes.json();
-      if(sData.status_code === 'FINISHED') break; if(sData.status_code === 'ERROR') return {ok:false, msg:'렌더링 에러'};
-    }
-    const pForm = new FormData(); pForm.append('creation_id', cData.id); pForm.append('access_token', token);
-    const pRes  = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish`, {method:'POST', body:pForm}); const pData = await pRes.json();
-    if(pData.id) return {ok:true, url:'https://www.instagram.com/reel/'+pData.id}; return {ok:false, msg:'게시 실패'};
+    toast('📤 Instagram: GitHub 업로드 중...', 'if');
+    const videoUrl = await uploadToGitHub();
+    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
+
+    toast('📡 Instagram: Worker로 전송 중...', 'if');
+    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=instagramUpload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token, igUserId, videoUrl, caption: fullCaption })
+    });
+    const data = await res.json();
+    return data;
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
 async function uploadFacebook(token, pageId, title, caption) {
   try {
-    toast('📤 Facebook: 구글 드라이브 업로드 중...', 'if');
-    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
-    const ptRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${token}`); const ptData = await ptRes.json(); const pageToken = ptData.access_token || token;
-    const sForm = new FormData(); sForm.append('upload_phase','start'); sForm.append('access_token', pageToken);
-    const sRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:sForm}); const sData = await sRes.json();
-    if(!sData.video_id) return {ok:false, msg:'세션 시작 실패'};
-    const fForm = new FormData(); fForm.append('upload_phase','finish'); fForm.append('video_id', sData.video_id); fForm.append('video_state','PUBLISHED'); fForm.append('description', title + '\n\n' + caption); fForm.append('file_url', driveUrl); fForm.append('access_token', pageToken);
-    const fRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:fForm}); const fData = await fRes.json();
-    if(fData.success) return {ok:true, url:'https://www.facebook.com/reel/'+sData.video_id}; return {ok:false, msg:'게시 실패'};
+    toast('📤 Facebook: GitHub 업로드 중...', 'if');
+    const videoUrl = await uploadToGitHub();
+    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
+
+    toast('📡 Facebook: Worker로 전송 중...', 'if');
+    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=facebookUpload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token, pageId, videoUrl, title, caption })
+    });
+    const data = await res.json();
+    return data;
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
 async function uploadTikTok(token, title) {
   try {
-    toast('📤 TikTok: 드라이브 업로드 중...', 'if');
-    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
-    const res = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
-      method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8' },
-      body: JSON.stringify({ post_info: { title: (title + ' #사주 #운세').slice(0,150), privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source:'PULL_FROM_URL', video_url:driveUrl } })
+    toast('📤 TikTok: GitHub 업로드 중...', 'if');
+    const videoUrl = await uploadToGitHub();
+    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
+
+    toast('📡 TikTok: Worker로 전송 중...', 'if');
+    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=tiktokUpload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token, videoUrl, title })
     });
-    const data = await res.json(); if(data.data?.publish_id) return {ok:true, msg:'업로드 완료'}; return {ok:false, msg:'실패'};
+    const data = await res.json();
+    return data;
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
@@ -1130,19 +1136,25 @@ async function uploadNaver(token, title, caption) {
 
 async function uploadThreads(token, userId, title, caption) {
   try {
-    toast('📤 Threads: 드라이브 업로드 중...', 'if');
-    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
-    const cForm = new FormData(); cForm.append('media_type','VIDEO'); cForm.append('video_url', driveUrl); cForm.append('text', title + '\n\n' + caption); cForm.append('access_token', token);
-    const cRes  = await fetch(`https://graph.threads.net/v1.0/${userId}/threads`, {method:'POST', body:cForm}); const cData = await cRes.json();
-    if(!cData.id) return {ok:false, msg:'컨테이너 실패'};
-    await new Promise(r=>setTimeout(r,5000));
-    const pForm = new FormData(); pForm.append('creation_id', cData.id); pForm.append('access_token', token);
-    const pRes  = await fetch(`https://graph.threads.net/v1.0/${userId}/threads_publish`, {method:'POST', body:pForm}); const pData = await pRes.json();
-    if(pData.id) return {ok:true, url:'https://www.threads.net/t/'+pData.id}; return {ok:false, msg:'게시 실패'};
+    const text = title + '\n\n' + caption;
+    toast('📤 Threads: GitHub 업로드 중...', 'if');
+    const videoUrl = await uploadToGitHub();
+    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
+
+    toast('📡 Threads: Worker로 전송 중...', 'if');
+    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=threadsUpload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token, userId, videoUrl, text })
+    });
+    const data = await res.json();
+    return data;
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
-async function uploadToDriveFromBrowser() {
+async function uploadToGitHub() { return uploadToDriveFromBrowser(); }
+
+function uploadToDriveFromBrowser() {
   try {
     const token  = S.cfg.ghToken;
     const repo   = S.cfg.ghRepo || 'JJ-Labs-Korea/shorts-translator';
