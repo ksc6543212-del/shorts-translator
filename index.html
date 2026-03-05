@@ -1152,7 +1152,7 @@ async function uploadThreads(token, userId, title, caption) {
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
-async async function uploadToGitHub() { return await uploadToDriveFromBrowser(); }
+async function uploadToGitHub() { return await uploadToDriveFromBrowser(); }
 
 async function uploadToDriveFromBrowser() {
   try {
