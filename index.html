@@ -544,8 +544,8 @@ textarea.fi { min-height: 60px; resize: vertical; }
       <div class="fld"><label class="flbl">🔑 Gemini API Key</label><input class="fi" id="cfg-gemini" type="password" placeholder="AIza..."></div>
       <div class="fld"><label class="flbl">🔗 JJ발사대 GAS URL</label><input class="fi" id="cfg-gas" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
       <div class="fld"><label class="flbl">🔗 기본 랜딩 URL (쇼핑몰/사주웹 등)</label><input class="fi" id="cfg-cafe" type="url" placeholder="https://yourstore.com"></div>
-      <div class="fld"><label class="flbl">🐙 GitHub Token (영상 임시 업로드용)</label><input class="fi" id="cfg-gh-token" type="password" placeholder="ghp_..."></div>
-      <div class="fld"><label class="flbl">🐙 GitHub 저장소 (owner/repo)</label><input class="fi" id="cfg-gh-repo" type="text" placeholder="JJ-Labs-Korea/shorts-translator"></div>
+      <div class="fld"><label class="flbl">🐙 GitHub Token</label><input class="fi" id="cfg-gh-token" type="password" placeholder="ghp_..."></div>
+      <div class="fld"><label class="flbl">🐙 GitHub 저장소</label><input class="fi" id="cfg-gh-repo" type="text" placeholder="JJ-Labs-Korea/shorts-translator"></div>
       
       <hr style="margin:18px 0;border:none;border-top:1px solid #e0e0e0">
       <div style="font-size:12px;font-weight:900;color:#FF0000;margin-bottom:6px">📺 YouTube 계정 관리 (최대 30개)</div>
@@ -1161,9 +1161,9 @@ async function uploadToGitHub() {
     if(!uploadData.content) { toast('❌ GitHub 업로드 실패: ' + (uploadData.message||'오류'), 'er'); return null; }
 
     const sha = uploadData.content.sha;
-    // Worker 프록시 URL (틱톡 도메인 인증 우회)
-    const rawUrl   = `https://raw.githubusercontent.com/${repo}/main/temp/${uploadName}`;
-    const proxyUrl = `https://jj-fortune.co.kr/video/?url=${encodeURIComponent(rawUrl)}`;
+
+    // jj-fortune.co.kr/video/파일명 형식 → 틱톡 도메인 인증 통과
+    const proxyUrl = `https://jj-fortune.co.kr/video/${uploadName}`;
 
     toast('✅ GitHub 업로드 완료!', 'ok');
 
@@ -1183,6 +1183,15 @@ async function uploadToGitHub() {
 }
 
 async function uploadToDriveFromBrowser() { return await uploadToGitHub(); }
+
+async function _uploadToDrive() {
+  try {
+    if(!S.cfg.gas) return null;
+    const base64 = await fileToBase64(S.file);
+    const res = await fetch(S.cfg.gas, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'uploadDrive', fileName: S.file.name, fileType: S.file.type || 'video/mp4', fileData: base64.split(',')[1] }) });
+    const data = await res.json(); return data.url || null;
+  } catch(e) { return null; }
+}
 
 async function saveDeployLog(platform, channelName, title, resultUrl, status) {
   if(!S.cfg.gas) return;
