@@ -540,7 +540,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <div class="msec">
       <div class="fld"><label class="flbl">🔑 Gemini API Key</label><input class="fi" id="cfg-gemini" type="password" placeholder="AIza..."></div>
       <div class="fld"><label class="flbl">🔗 JJ발사대 GAS URL</label><input class="fi" id="cfg-gas" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
-      <div class="fld"><label class="flbl">🔗 기본 랜딩 URL (쇼핑몰/사주웹 등)</label><input class="fi" id="cfg-cafe" type="url" placeholder="https://yourstore.com"></div>
+      <div class="fld"><label class="flbl">🔗 기본 랜딩 URL (쇼핑몰/사주웹 등)</label><input class="fi" id="cfg-cafe" type="url" placeholder="https://jjkorea.net/product/..."></div>
       
       <hr style="margin:18px 0;border:none;border-top:1px solid #e0e0e0">
       <div style="font-size:12px;font-weight:900;color:#FF0000;margin-bottom:6px">📺 YouTube 계정 관리 (최대 30개)</div>
@@ -892,8 +892,16 @@ async function runAI(){
     document.getElementById('mPath').textContent = "경로: 📁 01 JJ_Suno_배경음악 / " + catData.l;
     document.getElementById('mBpm').textContent = catData.b;
 
-    const baseLink = S.cfg.cafe || 'https://yourstore.com';
-    const camp = S.cfg.campaign || 'jj_shorts_2026';
+    const BASE_URL = S.cfg.cafe || 'https://jjkorea.net/product/%EC%A0%9C%EC%9D%B4%EC%A0%9C%EC%9D%B4-%EC%8A%A4%EC%B9%BC%ED%94%84-%EC%95%B0%ED%94%8C-%ED%83%88%EB%AA%A8-%EC%99%84%ED%99%94-%EA%B8%B0%EB%8A%A5%EC%84%B1/31/category/1/display/2/?icid=MAIN.product_listmain_1';
+    const camp = 'jj_shorts_2026';
+
+    // 플랫폼별 UTM 링크 생성
+    const utmYT  = `${BASE_URL}&utm_source=youtube&utm_medium=shorts&utm_campaign=${camp}`;
+    const utmFB  = `${BASE_URL}&utm_source=facebook&utm_medium=reels&utm_campaign=${camp}`;
+    const utmTT  = `${BASE_URL}&utm_source=tiktok&utm_medium=shorts&utm_campaign=${camp}`;
+    const utmNV  = `${BASE_URL}&utm_source=naver&utm_medium=blog&utm_campaign=${camp}`;
+    const utmTH  = `${BASE_URL}&utm_source=threads&utm_medium=social&utm_campaign=${camp}`;
+
     const ytDesc = parsed.youtube.description || `${parsed.summary}\n\n👇 자세한 내용은 고정 댓글을 확인하세요!`;
 
     document.getElementById('yt-t').value = parsed.youtube.title || '';
@@ -911,29 +919,29 @@ async function runAI(){
         }
     }
 
-    document.getElementById('yt-cta-msg').value = `상세 정보 확인하기 👉`;
-    document.getElementById('yt-cta-url').value = `${baseLink}?utm_source=youtube&utm_campaign=${camp}`;
+    document.getElementById('yt-cta-msg').value = `🛒 JJ 스칼프 앰플 지금 바로 확인하기 👉`;
+    document.getElementById('yt-cta-url').value = utmYT;
     
     document.getElementById('ig-c').value = parsed.instagram.caption || '';
     document.getElementById('ig-h').value = parsed.instagram.hashtags || '';
     if(parsed.instagram.location) document.getElementById('ig-loc').value = "📍 " + parsed.instagram.location;
-    document.getElementById('ig-cta-msg').value = `👇 제 프로필 링크를 클릭해 무료 사주를 확인하세요!`;
+    document.getElementById('ig-cta-msg').value = `🛒 탈모 완화 기능성 앰플 → 프로필 링크에서 확인!`;
     
     document.getElementById('fb-t').value = parsed.facebook.title || '';
     document.getElementById('fb-b').value = parsed.facebook.body || '';
-    document.getElementById('fb-cta-url').value = `${baseLink}?utm_source=facebook&utm_campaign=${camp}`;
+    document.getElementById('fb-cta-url').value = utmFB;
 
     document.getElementById('tt-d').value = parsed.tiktok.description || '';
     if(parsed.tiktok.sound_keyword) document.getElementById('tt-sound').value = "🎵 추천 사운드: " + parsed.tiktok.sound_keyword;
-    document.getElementById('tt-cta-msg').value = `👇 무료 사주는 제 프로필 웹사이트 링크를 눌러주세요!`;
+    document.getElementById('tt-cta-msg').value = `🛒 JJ 스칼프 앰플 → 프로필 링크 확인!`;
     
     document.getElementById('nv-t').value = parsed.naver.title || '';
     document.getElementById('nv-b').value = parsed.naver.body || '';
-    document.getElementById('nv-cta-msg').value = `🔮 더 자세한 내용이 궁금하다면? 👉`;
-    document.getElementById('nv-cta-url').value = `${baseLink}?utm_source=naver&utm_campaign=${camp}`;
+    document.getElementById('nv-cta-msg').value = `🛒 JJ 스칼프 앰플 탈모 완화 기능성 → 지금 바로 확인하기 👉`;
+    document.getElementById('nv-cta-url').value = utmNV;
 
     document.getElementById('th-t').value = parsed.threads.text || parsed.ocr_text;
-    document.getElementById('th-cta-url').value = `${baseLink}?utm_source=threads&utm_campaign=${camp}`;
+    document.getElementById('th-cta-url').value = utmTH;
 
     cc(document.getElementById('yt-t'), 100, 'c-yt-t');
     cc(document.getElementById('yt-d'), 5000, 'c-yt-d');
