@@ -287,7 +287,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
       <div class="cta-lbl">🎯 전환율(CTA) 세팅</div>
       <div class="cta-desc">💡 유튜브 정책상 본문 링크 클릭 불가. <b>'고정 댓글'</b>로 세팅됩니다.</div>
       <input class="fi" id="yt-cta-msg" type="text" placeholder="고정 댓글 멘트 (예: 상세 정보 확인하기 👉)">
-      <input class="fi" id="yt-cta-url" type="url" placeholder="연결할 랜딩 URL (자동 채워짐)">
+      <input class="fi" id="yt-cta-url" type="url" placeholder="🔗 연결할 링크 (쿠팡파트너스 또는 자사몰 URL)">
     </div>
   </div>
 </div>
@@ -329,8 +329,9 @@ textarea.fi { min-height: 60px; resize: vertical; }
     </div>
     <div class="cta-group">
       <div class="cta-lbl">🎯 전환율(CTA) 멘트 세팅</div>
-      <div class="cta-desc">💡 인스타는 링크 클릭 불가. <b>'프로필 링크(Bio)'</b>로 유도해야 합니다.</div>
+      <div class="cta-desc">💡 인스타는 링크 클릭 불가. <b>'프로필 링크(Bio)'</b>로 유도하거나 <b>인포크링크</b> 키워드 댓글 DM 자동발송으로 연결하세요.</div>
       <input class="fi" id="ig-cta-msg" type="text" placeholder="본문 하단 삽입 멘트 (예: 프로필 링크 확인!)">
+      <input class="fi" id="ig-cta-url" type="url" placeholder="🔗 링크 (선택) — 인포크링크 또는 자사몰 URL" style="margin-top:5px;">
     </div>
   </div>
 </div>
@@ -373,7 +374,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
         <option value="SHOP_NOW">버튼: 지금 구매하기</option>
         <option value="NO_BUTTON">버튼 없음</option>
       </select>
-      <input class="fi" id="fb-cta-url" type="url" placeholder="버튼 클릭 시 이동할 URL (자동 채워짐)">
+      <input class="fi" id="fb-cta-url" type="url" placeholder="🔗 버튼 클릭 시 이동할 링크 (쿠팡파트너스 또는 자사몰 URL)">
     </div>
   </div>
 </div>
@@ -420,6 +421,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
       <div class="cta-lbl">🎯 전환율(CTA) 멘트 세팅</div>
       <div class="cta-desc">💡 틱톡은 본문 링크 불가. <b>'프로필 링크'</b>로 유도해야 합니다.</div>
       <input class="fi" id="tt-cta-msg" type="text" placeholder="본문 하단 삽입 멘트 (예: 프로필 링크 확인!)">
+      <input class="fi" id="tt-cta-url" type="url" placeholder="🔗 링크 (선택) — 쿠팡파트너스 또는 자사몰 URL" style="margin-top:5px;">
     </div>
   </div>
 </div>
@@ -465,8 +467,8 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <div class="cta-group" style="margin-top:auto;">
       <div class="cta-lbl">🎯 전환율(CTA) 링크 세팅</div>
       <div class="cta-desc">💡 블로그 본문 하단에 <b>클릭 가능한 텍스트 링크</b>로 삽입됩니다.</div>
-      <input class="fi" id="nv-cta-msg" type="text" placeholder="링크 안내 멘트 (예: 🔮 무료 사주 확인하기 👉)">
-      <input class="fi" id="nv-cta-url" type="url" placeholder="연결할 랜딩 URL (자동 채워짐)">
+      <input class="fi" id="nv-cta-msg" type="text" placeholder="링크 안내 멘트 (예: 🛒 탈모 완화 기능성 앰플 확인하기 👉)">
+      <input class="fi" id="nv-cta-url" type="url" placeholder="🔗 연결할 링크 (쿠팡파트너스 또는 자사몰 URL)">
     </div>
   </div>
 </div>
@@ -512,7 +514,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <div class="cta-group" style="margin-top:auto;">
       <div class="cta-lbl">🎯 전환율(CTA) 링크 세팅</div>
       <div class="cta-desc">💡 본문 하단에 <b>클릭 가능한 대형 썸네일(리치 링크)</b>로 첨부됩니다.</div>
-      <input class="fi" id="th-cta-url" type="url" placeholder="첨부할 공유 링크 (자동 채워짐)">
+      <input class="fi" id="th-cta-url" type="url" placeholder="🔗 첨부할 링크 (쿠팡파트너스 또는 자사몰 URL)">
     </div>
   </div>
 </div>
@@ -926,6 +928,7 @@ async function runAI(){
     document.getElementById('ig-h').value = parsed.instagram.hashtags || '';
     if(parsed.instagram.location) document.getElementById('ig-loc').value = "📍 " + parsed.instagram.location;
     document.getElementById('ig-cta-msg').value = `🛒 탈모 완화 기능성 앰플 → 프로필 링크에서 확인!`;
+    document.getElementById('ig-cta-url') && (document.getElementById('ig-cta-url').value = `${BASE_URL}&utm_source=instagram&utm_medium=reels&utm_campaign=${camp}`);
     
     document.getElementById('fb-t').value = parsed.facebook.title || '';
     document.getElementById('fb-b').value = parsed.facebook.body || '';
@@ -934,6 +937,7 @@ async function runAI(){
     document.getElementById('tt-d').value = parsed.tiktok.description || '';
     if(parsed.tiktok.sound_keyword) document.getElementById('tt-sound').value = "🎵 추천 사운드: " + parsed.tiktok.sound_keyword;
     document.getElementById('tt-cta-msg').value = `🛒 JJ 스칼프 앰플 → 프로필 링크 확인!`;
+    document.getElementById('tt-cta-url') && (document.getElementById('tt-cta-url').value = utmTT);
     
     document.getElementById('nv-t').value = parsed.naver.title || '';
     document.getElementById('nv-b').value = parsed.naver.body || '';
