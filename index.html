@@ -1167,17 +1167,31 @@ async function uploadToDriveFromBrowser() {
   try {
     if(!S.cfg.gas) return null;
     const base64 = await fileToBase64(S.file);
+    const fileData = base64.split(',')[1];
+    // GAS는 CORS 제한으로 POST JSON 불가 → Image Proxy 방식으로 전송
     const gasUrl = S.cfg.gas + '?action=uploadDrive';
-    const res = await fetch(gasUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'uploadDrive', fileName: S.file.name, fileType: S.file.type || 'video/mp4', fileData: base64.split(',')[1] }) });
-    const data = await res.json(); return data.url || null;
-  } catch(e) { return null; }
+    const res = await fetch(gasUrl, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'uploadDrive', fileName: S.file.name, fileType: S.file.type || 'video/mp4', fileData: fileData })
+    });
+    const data = await res.json();
+    return data.url || null;
+  } catch(e) { console.log('Drive 업로드 오류:', e.message); return null; }
 }
 
 async function saveDeployLog(platform, channelName, title, resultUrl, status) {
   if(!S.cfg.gas) return;
   try {
-    const gasUrl = S.cfg.gas + '?action=saveDeployLog';
-    await fetch(gasUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ action: 'saveDeployLog', platform: platform, channelName: channelName, title: title, fileName: S.file?.name || '', resultUrl: resultUrl, status: status }) });
+    const gasUrl = S.cfg.gas + '?action=saveDeployLog'
+      + '&platform=' + encodeURIComponent(platform)
+      + '&channelName=' + encodeURIComponent(channelName || '')
+      + '&title=' + encodeURIComponent(title || '')
+      + '&fileName=' + encodeURIComponent(S.file?.name || '')
+      + '&resultUrl=' + encodeURIComponent(resultUrl || '')
+      + '&status=' + encodeURIComponent(status || '');
+    await fetch(gasUrl, { method: 'GET', mode: 'no-cors' });
   } catch(e) { console.log('GAS 기록 오류:', e.message); }
 }
 
