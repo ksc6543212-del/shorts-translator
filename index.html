@@ -584,6 +584,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
 
 <script>
 const S={file:null, ft:null, base64Img:null, ai:null, cat:null, active:new Set(['youtube','instagram','facebook','tiktok','naver','threads']), cfg:{}, log:[], isBgmOn: true};
+const WORKER_URL = 'https://jj-shorts-proxy.ceo-116.workers.dev';
 const CATS={
   news:{e:'📰',l:'뉴스/이슈',m:'news_intense.mp3',b:'128 BPM'},
   saju:{e:'🔮',l:'사주/운세',m:'saju_mystic.mp3',b:'72 BPM'},
@@ -1092,9 +1093,10 @@ async function uploadYouTube(token, title, caption) {
 async function uploadInstagram(token, igUserId, title, caption) {
   try {
     const fullCaption = title + '\n\n' + caption;
-    toast('📤 Instagram: 구글 드라이브 업로드 중...', 'if');
+    toast('📤 Instagram: 영상 드라이브 업로드 중...', 'if');
     const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
-    const cForm = new FormData(); cForm.append('media_type','REELS'); cForm.append('video_url', driveUrl); cForm.append('caption', fullCaption); cForm.append('share_to_feed','true'); cForm.append('access_token', token);
+    const videoUrl = `${WORKER_URL}?action=proxy&url=${encodeURIComponent(driveUrl)}`;
+    const cForm = new FormData(); cForm.append('media_type','REELS'); cForm.append('video_url', videoUrl); cForm.append('caption', fullCaption); cForm.append('share_to_feed','true'); cForm.append('access_token', token);
     const cRes  = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {method:'POST', body:cForm}); const cData = await cRes.json();
     if(!cData.id) return {ok:false, msg:'컨테이너 생성 실패'};
     toast('⏳ Instagram 렌더링 대기 중...', 'if');
@@ -1111,13 +1113,14 @@ async function uploadInstagram(token, igUserId, title, caption) {
 
 async function uploadFacebook(token, pageId, title, caption) {
   try {
-    toast('📤 Facebook: 구글 드라이브 업로드 중...', 'if');
+    toast('📤 Facebook: 영상 드라이브 업로드 중...', 'if');
     const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
+    const videoUrl = `${WORKER_URL}?action=proxy&url=${encodeURIComponent(driveUrl)}`;
     const ptRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${token}`); const ptData = await ptRes.json(); const pageToken = ptData.access_token || token;
     const sForm = new FormData(); sForm.append('upload_phase','start'); sForm.append('access_token', pageToken);
     const sRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:sForm}); const sData = await sRes.json();
     if(!sData.video_id) return {ok:false, msg:'세션 시작 실패'};
-    const fForm = new FormData(); fForm.append('upload_phase','finish'); fForm.append('video_id', sData.video_id); fForm.append('video_state','PUBLISHED'); fForm.append('description', title + '\n\n' + caption); fForm.append('file_url', driveUrl); fForm.append('access_token', pageToken);
+    const fForm = new FormData(); fForm.append('upload_phase','finish'); fForm.append('video_id', sData.video_id); fForm.append('video_state','PUBLISHED'); fForm.append('description', title + '\n\n' + caption); fForm.append('file_url', videoUrl); fForm.append('access_token', pageToken);
     const fRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:fForm}); const fData = await fRes.json();
     if(fData.success) return {ok:true, url:'https://www.facebook.com/reel/'+sData.video_id}; return {ok:false, msg:'게시 실패'};
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
@@ -1125,13 +1128,15 @@ async function uploadFacebook(token, pageId, title, caption) {
 
 async function uploadTikTok(token, title) {
   try {
-    toast('📤 TikTok: 드라이브 업로드 중...', 'if');
-    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
+    toast('📤 TikTok: 영상 드라이브 업로드 중...', 'if');
+    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
+    toast('📡 TikTok: Worker 경유 전송 중...', 'if');
+    const videoUrl = `${WORKER_URL}?action=proxy&url=${encodeURIComponent(driveUrl)}`;
     const res = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8' },
-      body: JSON.stringify({ post_info: { title: (title + ' #사주 #운세').slice(0,150), privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source:'PULL_FROM_URL', video_url:driveUrl } })
+      body: JSON.stringify({ post_info: { title: title.slice(0,150), privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source:'PULL_FROM_URL', video_url: videoUrl } })
     });
-    const data = await res.json(); if(data.data?.publish_id) return {ok:true, msg:'업로드 완료'}; return {ok:false, msg:'실패'};
+    const data = await res.json(); if(data.data?.publish_id) return {ok:true, msg:'업로드 완료'}; return {ok:false, msg: JSON.stringify(data)};
   } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
@@ -1145,9 +1150,10 @@ async function uploadNaver(token, title, caption) {
 
 async function uploadThreads(token, userId, title, caption) {
   try {
-    toast('📤 Threads: 드라이브 업로드 중...', 'if');
+    toast('📤 Threads: 영상 드라이브 업로드 중...', 'if');
     const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
-    const cForm = new FormData(); cForm.append('media_type','VIDEO'); cForm.append('video_url', driveUrl); cForm.append('text', title + '\n\n' + caption); cForm.append('access_token', token);
+    const videoUrl = `${WORKER_URL}?action=proxy&url=${encodeURIComponent(driveUrl)}`;
+    const cForm = new FormData(); cForm.append('media_type','VIDEO'); cForm.append('video_url', videoUrl); cForm.append('text', title + '\n\n' + caption); cForm.append('access_token', token);
     const cRes  = await fetch(`https://graph.threads.net/v1.0/${userId}/threads`, {method:'POST', body:cForm}); const cData = await cRes.json();
     if(!cData.id) return {ok:false, msg:'컨테이너 실패'};
     await new Promise(r=>setTimeout(r,5000));
