@@ -1,6 +1,3 @@
-폴더 하이라이트
-JJ 웹 프로젝트 코드는 Viral 마스터 시스템과 Shorts 자동 생성기의 최신 버전(v6.6, v22.0)을 포함하며 AI 분석 기능을 통합했습니다.
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -317,7 +314,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <select class="slot-sel" id="sel-url-instagram" onchange="loadSlot('instagram', 'url')"></select>
     <button class="slot-edit-btn" onclick="renameSlot('instagram', 'url')">✎</button>
     <input class="url-inp" id="url-instagram" type="url" placeholder="배포 URL (자동저장)" oninput="saveSlot('instagram', 'url')">
-    <a class="url-btn" id="url-instagram" href="#" target="_blank">↗</a>
+    <a class="url-btn" id="urlbtn-instagram" href="#" target="_blank">↗</a>
   </div>
   <div class="pb">
     <div class="va" id="va-instagram" onclick="attachVid('instagram')">
@@ -360,7 +357,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <select class="slot-sel" id="sel-url-facebook" onchange="loadSlot('facebook', 'url')"></select>
     <button class="slot-edit-btn" onclick="renameSlot('facebook', 'url')">✎</button>
     <input class="url-inp" id="url-facebook" type="url" placeholder="배포 URL (자동저장)" oninput="saveSlot('facebook', 'url')">
-    <a class="url-btn" id="url-facebook" href="#" target="_blank">↗</a>
+    <a class="url-btn" id="urlbtn-facebook" href="#" target="_blank">↗</a>
   </div>
   <div class="pb">
     <div class="va" id="va-facebook" onclick="attachVid('facebook')">
@@ -403,7 +400,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <select class="slot-sel" id="sel-url-tiktok" onchange="loadSlot('tiktok', 'url')"></select>
     <button class="slot-edit-btn" onclick="renameSlot('tiktok', 'url')">✎</button>
     <input class="url-inp" id="url-tiktok" type="url" placeholder="배포 URL (자동저장)" oninput="saveSlot('tiktok', 'url')">
-    <a class="url-btn" id="url-tiktok" href="#" target="_blank">↗</a>
+    <a class="url-btn" id="urlbtn-tiktok" href="#" target="_blank">↗</a>
   </div>
   <div class="pb">
     <div class="va" id="va-tiktok" onclick="attachVid('tiktok')">
@@ -449,7 +446,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <select class="slot-sel" id="sel-url-naver" onchange="loadSlot('naver', 'url')"></select>
     <button class="slot-edit-btn" onclick="renameSlot('naver', 'url')">✎</button>
     <input class="url-inp" id="url-naver" type="url" placeholder="배포 URL (자동저장)" oninput="saveSlot('naver', 'url')">
-    <a class="url-btn" id="url-naver" href="#" target="_blank">↗</a>
+    <a class="url-btn" id="urlbtn-naver" href="#" target="_blank">↗</a>
   </div>
   <div class="pb">
     <div class="fld">
@@ -496,7 +493,7 @@ textarea.fi { min-height: 60px; resize: vertical; }
     <select class="slot-sel" id="sel-url-threads" onchange="loadSlot('threads', 'url')"></select>
     <button class="slot-edit-btn" onclick="renameSlot('threads', 'url')">✎</button>
     <input class="url-inp" id="url-threads" type="url" placeholder="배포 URL (자동저장)" oninput="saveSlot('threads', 'url')">
-    <a class="url-btn" id="url-threads" href="#" target="_blank">↗</a>
+    <a class="url-btn" id="urlbtn-threads" href="#" target="_blank">↗</a>
   </div>
   <div class="pb">
     <div class="txt-notice">💡 <strong>Threads 특성:</strong> 텍스트+링크가 기본입니다. AI가 영상을 읽어 대화체로 변환합니다.</div>
@@ -544,8 +541,6 @@ textarea.fi { min-height: 60px; resize: vertical; }
       <div class="fld"><label class="flbl">🔑 Gemini API Key</label><input class="fi" id="cfg-gemini" type="password" placeholder="AIza..."></div>
       <div class="fld"><label class="flbl">🔗 JJ발사대 GAS URL</label><input class="fi" id="cfg-gas" type="url" placeholder="https://script.google.com/macros/s/.../exec"></div>
       <div class="fld"><label class="flbl">🔗 기본 랜딩 URL (쇼핑몰/사주웹 등)</label><input class="fi" id="cfg-cafe" type="url" placeholder="https://yourstore.com"></div>
-      <div class="fld"><label class="flbl">🐙 GitHub Token</label><input class="fi" id="cfg-gh-token" type="password" placeholder="ghp_..."></div>
-      <div class="fld"><label class="flbl">🐙 GitHub 저장소</label><input class="fi" id="cfg-gh-repo" type="text" placeholder="JJ-Labs-Korea/shorts-translator"></div>
       
       <hr style="margin:18px 0;border:none;border-top:1px solid #e0e0e0">
       <div style="font-size:12px;font-weight:900;color:#FF0000;margin-bottom:6px">📺 YouTube 계정 관리 (최대 30개)</div>
@@ -613,7 +608,7 @@ window.onload = () => {
 
 function saveDashboardState() {
   const state = { active: Array.from(S.active), inputs: {}, checkboxes: {} };
-  const elements = document.querySelectorAll('.grid6 input, .grid6 textarea, .grid6 select');
+  const elements = document.querySelectorAll('.grid6 input, .grid6 textarea, .grid6 select, .top-right input, .top-right textarea, .top-right select');
   elements.forEach(el => {
       if(el.id) {
           if(el.type === 'checkbox') state.checkboxes[el.id] = el.checked;
@@ -753,13 +748,15 @@ function loadSlot(platform, type, forceSlot) {
       const brandInp = document.getElementById(`brand-${platform}`);
       if(brandInp) brandInp.value = localStorage.getItem(`jj_brand_${platform}_${slotNum}`) || '';
   }
-  syncOpen(`${type}-${platform}`, `${type}btn-${platform}`);
+  const btnId = type === 'url' ? `urlbtn-${platform}` : `${type}btn-${platform}`;
+  syncOpen(`${type}-${platform}`, btnId);
 }
 
 function saveSlot(platform, type) {
   const slotNum = document.getElementById(`sel-${type}-${platform}`).value;
   localStorage.setItem(`jj_slot_val_${type}_${platform}_${slotNum}`, document.getElementById(`${type}-${platform}`).value);
-  syncOpen(`${type}-${platform}`, `${type}btn-${platform}`);
+  const btnId = type === 'url' ? `urlbtn-${platform}` : `${type}btn-${platform}`;
+  syncOpen(`${type}-${platform}`, btnId);
 }
 
 function syncOpen(inpId, btnId){
@@ -965,11 +962,11 @@ function togP(btn,p){
 
 function updateStats() { document.getElementById('bsActive').textContent = S.active.size; }
 
-function addLog(p, statusMsg) {
+function addLog(p, statusMsg, url='') {
     const slotNum = document.getElementById(`sel-ch-${p}`)?.value || '1';
     const brandInp = document.getElementById(`brand-${p}`)?.value || '';
     const brandTxt = brandInp ? `[${brandInp}]` : `[슬롯 ${slotNum}]`;
-    S.log.unshift({ datetime: new Date().toLocaleString('ko-KR'), fileName: S.file?.name || '-', platform: p, brandInfo: brandTxt, category: S.cat || '-', status: statusMsg });
+    S.log.unshift({ datetime: new Date().toLocaleString('ko-KR'), fileName: S.file?.name || '-', platform: p, brandInfo: brandTxt, category: S.cat || '-', status: statusMsg, url: url });
 }
 
 async function deploySingle(p) {
@@ -1005,7 +1002,7 @@ async function deploySingle(p) {
     if(!activeToken) {toast(`⚙ ${PC[p]} 토큰을 확인하세요.`,'er'); return;}
   }
 
-  const title       = document.getElementById('yt-t')?.value || document.getElementById('ig-t')?.value || S.file.name;
+  const title       = document.getElementById('yt-t')?.value || document.getElementById('ig-c')?.value || S.file.name;
   const caption     = document.getElementById('yt-d')?.value || document.getElementById('ig-c')?.value || '';
   const channelName = document.getElementById(`ch-${p}`)?.value || '';
 
@@ -1039,10 +1036,14 @@ async function deployAll() {
   if(!S.file){toast('파일을 업로드하세요','er');return;}
   if(S.active.size === 0){toast('활성화된 플랫폼이 없습니다','er');return;}
   toast('🚀 전체 플랫폼 순차 배포 시작...', 'ok');
+  let successCount = 0; let failCount = 0;
   for(const p of S.active){
-    toast(`⏳ ${PC[p]} 배포 중...`, 'if'); await deploySingle(p); await new Promise(r=>setTimeout(r, 3000));
+    toast(`⏳ ${PC[p]} 배포 중...`, 'if');
+    try { await deploySingle(p); successCount++; } catch(e) { failCount++; }
+    await new Promise(r=>setTimeout(r, 3000));
   }
-  toast(`🎉 전체 배포 완료! (${S.active.size}개 채널)`, 'ok');
+  if(failCount === 0) toast(`🎉 전체 배포 완료! (${successCount}개 성공)`, 'ok');
+  else toast(`⚠️ 배포 완료: ${successCount}개 성공 / ${failCount}개 실패`, 'er');
 }
 
 // --------------------------------------------------------------------
@@ -1060,7 +1061,9 @@ async function refreshYtToken(acct){
 
 async function uploadYouTube(token, title, caption) {
   try {
-    const meta = { snippet: { title: title.slice(0,100), description: caption, tags: ['사주','운세','shorts','2026','오늘의운세'], categoryId: '22' }, status: { privacyStatus:'public', selfDeclaredMadeForKids:false } };
+    const catVal = document.getElementById('yt-cat')?.value || '22';
+    const isKids = !(document.getElementById('yt-kids')?.checked ?? true);
+    const meta = { snippet: { title: title.slice(0,100), description: caption, tags: ['사주','운세','shorts','2026','오늘의운세'], categoryId: catVal }, status: { privacyStatus:'public', selfDeclaredMadeForKids: isKids } };
     const initRes = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8', 'X-Upload-Content-Type': S.file.type || 'video/mp4', 'X-Upload-Content-Length': S.file.size }, body: JSON.stringify(meta)
     });
@@ -1077,44 +1080,47 @@ async function uploadYouTube(token, title, caption) {
 async function uploadInstagram(token, igUserId, title, caption) {
   try {
     const fullCaption = title + '\n\n' + caption;
-    toast('📤 Instagram: GitHub 업로드 중...', 'if');
-    const videoUrl = await uploadToGitHub();
-    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
-    toast('📡 Instagram: 전송 중...', 'if');
-    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=instagramUpload', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({token, igUserId, videoUrl, caption: fullCaption})
-    });
-    return await res.json();
-  } catch(e) { return {ok:false, msg:'오류:'+e.message}; }
+    toast('📤 Instagram: 구글 드라이브 업로드 중...', 'if');
+    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
+    const cForm = new FormData(); cForm.append('media_type','REELS'); cForm.append('video_url', driveUrl); cForm.append('caption', fullCaption); cForm.append('share_to_feed','true'); cForm.append('access_token', token);
+    const cRes  = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media`, {method:'POST', body:cForm}); const cData = await cRes.json();
+    if(!cData.id) return {ok:false, msg:'컨테이너 생성 실패'};
+    toast('⏳ Instagram 렌더링 대기 중...', 'if');
+    for(let i=0; i<12; i++){
+      await new Promise(r=>setTimeout(r,10000));
+      const sRes  = await fetch(`https://graph.facebook.com/v19.0/${cData.id}?fields=status_code&access_token=${token}`); const sData = await sRes.json();
+      if(sData.status_code === 'FINISHED') break; if(sData.status_code === 'ERROR') return {ok:false, msg:'렌더링 에러'};
+    }
+    const pForm = new FormData(); pForm.append('creation_id', cData.id); pForm.append('access_token', token);
+    const pRes  = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish`, {method:'POST', body:pForm}); const pData = await pRes.json();
+    if(pData.id) return {ok:true, url:'https://www.instagram.com/reel/'+pData.id}; return {ok:false, msg:'게시 실패'};
+  } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
 async function uploadFacebook(token, pageId, title, caption) {
   try {
-    toast('📤 Facebook: GitHub 업로드 중...', 'if');
-    const videoUrl = await uploadToGitHub();
-    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
-    toast('📡 Facebook: 전송 중...', 'if');
-    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=facebookUpload', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({token, pageId, videoUrl, title, caption})
-    });
-    return await res.json();
-  } catch(e) { return {ok:false, msg:'오류:'+e.message}; }
+    toast('📤 Facebook: 구글 드라이브 업로드 중...', 'if');
+    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 업로드 실패'};
+    const ptRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}?fields=access_token&access_token=${token}`); const ptData = await ptRes.json(); const pageToken = ptData.access_token || token;
+    const sForm = new FormData(); sForm.append('upload_phase','start'); sForm.append('access_token', pageToken);
+    const sRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:sForm}); const sData = await sRes.json();
+    if(!sData.video_id) return {ok:false, msg:'세션 시작 실패'};
+    const fForm = new FormData(); fForm.append('upload_phase','finish'); fForm.append('video_id', sData.video_id); fForm.append('video_state','PUBLISHED'); fForm.append('description', title + '\n\n' + caption); fForm.append('file_url', driveUrl); fForm.append('access_token', pageToken);
+    const fRes  = await fetch(`https://graph.facebook.com/v19.0/${pageId}/video_reels`, {method:'POST', body:fForm}); const fData = await fRes.json();
+    if(fData.success) return {ok:true, url:'https://www.facebook.com/reel/'+sData.video_id}; return {ok:false, msg:'게시 실패'};
+  } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
 async function uploadTikTok(token, title) {
   try {
-    toast('📤 TikTok: GitHub 업로드 중...', 'if');
-    const videoUrl = await uploadToGitHub();
-    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
-    toast('📡 TikTok: 전송 중...', 'if');
-    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=tiktokUpload', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({token, videoUrl, title})
+    toast('📤 TikTok: 드라이브 업로드 중...', 'if');
+    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
+    const res = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({ post_info: { title: (title + ' #사주 #운세').slice(0,150), privacy_level: 'PUBLIC_TO_EVERYONE', disable_duet: false, disable_comment: false, disable_stitch: false }, source_info: { source:'PULL_FROM_URL', video_url:driveUrl } })
     });
-    return await res.json();
-  } catch(e) { return {ok:false, msg:'오류:'+e.message}; }
+    const data = await res.json(); if(data.data?.publish_id) return {ok:true, msg:'업로드 완료'}; return {ok:false, msg:'실패'};
+  } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
 async function uploadNaver(token, title, caption) {
@@ -1127,64 +1133,19 @@ async function uploadNaver(token, title, caption) {
 
 async function uploadThreads(token, userId, title, caption) {
   try {
-    const text = title + '\n\n' + caption;
-    toast('📤 Threads: GitHub 업로드 중...', 'if');
-    const videoUrl = await uploadToGitHub();
-    if(!videoUrl) return {ok:false, msg:'GitHub 업로드 실패'};
-    toast('📡 Threads: 전송 중...', 'if');
-    const res = await fetch('https://jj-shorts-proxy.ceo-116.workers.dev?action=threadsUpload', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({token, userId, videoUrl, text})
-    });
-    return await res.json();
-  } catch(e) { return {ok:false, msg:'오류:'+e.message}; }
+    toast('📤 Threads: 드라이브 업로드 중...', 'if');
+    const driveUrl = await uploadToDriveFromBrowser(); if(!driveUrl) return {ok:false, msg:'Drive 실패'};
+    const cForm = new FormData(); cForm.append('media_type','VIDEO'); cForm.append('video_url', driveUrl); cForm.append('text', title + '\n\n' + caption); cForm.append('access_token', token);
+    const cRes  = await fetch(`https://graph.threads.net/v1.0/${userId}/threads`, {method:'POST', body:cForm}); const cData = await cRes.json();
+    if(!cData.id) return {ok:false, msg:'컨테이너 실패'};
+    await new Promise(r=>setTimeout(r,5000));
+    const pForm = new FormData(); pForm.append('creation_id', cData.id); pForm.append('access_token', token);
+    const pRes  = await fetch(`https://graph.threads.net/v1.0/${userId}/threads_publish`, {method:'POST', body:pForm}); const pData = await pRes.json();
+    if(pData.id) return {ok:true, url:'https://www.threads.net/t/'+pData.id}; return {ok:false, msg:'게시 실패'};
+  } catch(e) { return {ok:false, msg:'오류: '+e.message}; }
 }
 
-async function uploadToGitHub() {
-  try {
-    const token  = S.cfg.ghToken;
-    const repo   = S.cfg.ghRepo || 'JJ-Labs-Korea/shorts-translator';
-    if(!token) { toast('⚙ GitHub 토큰을 설정에서 입력해주세요.','er'); return null; }
-
-    const fileName   = S.file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const uploadName = Date.now() + '_' + fileName;
-    const base64     = await fileToBase64(S.file);
-    const fileData   = base64.split(',')[1];
-
-    toast('📤 GitHub에 영상 업로드 중...', 'if');
-    const uploadRes = await fetch(`https://api.github.com/repos/${repo}/contents/temp/${uploadName}`, {
-      method: 'PUT',
-      headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: `temp ${uploadName}`, content: fileData })
-    });
-    const uploadData = await uploadRes.json();
-    if(!uploadData.content) { toast('❌ GitHub 업로드 실패: ' + (uploadData.message||'오류'), 'er'); return null; }
-
-    const sha = uploadData.content.sha;
-
-    // jj-fortune.co.kr/video/파일명 형식 → 틱톡 도메인 인증 통과
-    const proxyUrl = `https://jj-fortune.co.kr/video/${uploadName}`;
-
-    toast('✅ GitHub 업로드 완료!', 'ok');
-
-    // 10분 후 자동 삭제
-    setTimeout(async () => {
-      try {
-        await fetch(`https://api.github.com/repos/${repo}/contents/temp/${uploadName}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: `delete ${uploadName}`, sha })
-        });
-      } catch(e) {}
-    }, 10 * 60 * 1000);
-
-    return proxyUrl;
-  } catch(e) { toast('❌ GitHub 오류: ' + e.message, 'er'); return null; }
-}
-
-async function uploadToDriveFromBrowser() { return await uploadToGitHub(); }
-
-async function _uploadToDrive() {
+async function uploadToDriveFromBrowser() {
   try {
     if(!S.cfg.gas) return null;
     const base64 = await fileToBase64(S.file);
@@ -1200,7 +1161,7 @@ async function saveDeployLog(platform, channelName, title, resultUrl, status) {
   } catch(e) { console.log('GAS 기록 오류:', e.message); }
 }
 
-function updateDbTable() { document.getElementById('dbBody').innerHTML=S.log.slice(0,20).map(r=>`<tr><td>${r.datetime}</td><td style="font-weight:800;">${r.fileName}</td><td><span class="ptag">${PC[r.platform]}</span></td><td style="color:var(--primary); font-weight:800;">${r.brandInfo}</td><td>${r.category}</td><td style="color:var(--success); font-weight:900;">✅ ${r.status}</td></tr>`).join(''); }
+function updateDbTable() { document.getElementById('dbBody').innerHTML=S.log.slice(0,20).map(r=>`<tr><td>${r.datetime}</td><td style="font-weight:800;">${r.fileName}</td><td><span class="ptag">${PC[r.platform]}</span></td><td style="color:var(--primary); font-weight:800;">${r.brandInfo}</td><td>${r.category}</td><td style="color:var(--success); font-weight:900;">✅ ${r.status}${r.url ? ' <a href="'+r.url+'" target="_blank" style="color:var(--primary);font-size:12px;">🔗 열기</a>' : ''}</td></tr>`).join(''); }
 function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(new Error('파일 읽기 실패')); r.readAsDataURL(file); }); }
 
 // --------------------------------------------------------------------
